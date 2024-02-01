@@ -7,5 +7,5 @@ irm https://raw.githubusercontent.com/matteomegatech/ScriptUtili/main/speedtest 
 Per rimuovere Office dal PC
 
 ```
-irw https://raw.githubusercontent.com/matteomegatech/ScriptUtili/main/RimozioneMSOffice | iex
+irm https://raw.githubusercontent.com/matteomegatech/ScriptUtili/main/RimozioneMSOffice | iex
 ```
