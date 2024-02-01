@@ -120,20 +120,20 @@ try {
     Remove-Files -zipPath $zipFilePath -folderPath $extractFolderPath
 
     $downloadLink = Get-SpeedTestDownloadLink
-    Write-Output "Downloading SpeedTest CLI..."
+    Write-Output "Download SpeedTest CLI"
     Download-SpeedTestZip -downloadLink $downloadLink -destination $zipFilePath
 
-    Write-Output "Extracting Zip File..."
+    Write-Output "Estrazione ZIP"
     Extract-Zip -zipPath $zipFilePath -destination $extractFolderPath
 
     $executablePath = Join-Path $extractFolderPath "speedtest.exe"
-    Write-Output "Running SpeedTest..."
+    Write-Output "Speedtest in corso"
     Run-SpeedTest -executablePath $executablePath -arguments $ScriptArgs
 
-    Write-Output "Cleaning up..."
+    Write-Output "Pulizia"
     Remove-Files -zipPath $zipFilePath -folderPath $extractFolderPath
 
-    Write-Output "Done."
+    Write-Output "Fatto"
 } catch {
-    Write-Error "An error occurred: $_"
+    Write-Error "Errore: $_"
 }
