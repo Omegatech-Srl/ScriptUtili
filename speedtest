@@ -1,43 +1,4 @@
-<#PSScriptInfo
 
-.VERSION 0.0.3
-
-.GUID a4af5e07-d626-4b97-b4d6-eef7265d1f7c
-
-.AUTHOR asheroto
-
-.COMPANYNAME asheroto
-
-.TAGS PowerShell speedtest speed test speedtest.net
-
-.PROJECTURI https://github.com/asheroto/speedtest
-
-.RELEASENOTES
-[Version 0.0.1] - Initial Release.
-[Version 0.0.2] - Added UseBasicParsing parameter to Invoke-WebRequest commands to fix issue with certain systems.
-[Version 0.0.3] - Adjusted to work with GDPR acceptance.
-
-#>
-
-<#
-.SYNOPSIS
-	Downloads and runs the Speedtest.net CLI client.
-.DESCRIPTION
-	Downloads and runs the Speedtest.net CLI client.
-
-Designed to use with short URL to make it easy to remember.
-.EXAMPLE
-	speedtest.ps1
-.PARAMETER Version
-    Displays the version of the script.
-.PARAMETER Help
-    Displays the full help information for the script.
-.NOTES
-	Version      : 0.0.3
-	Created by   : asheroto
-.LINK
-	Project Site: https://github.com/asheroto/speedtest
-#>
 param (
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
     [string[]]$ScriptArgs
