@@ -1,3 +1,7 @@
+<div align="center">
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3HkrFkToxF0Hgrq_-LdbaUvDcHcNehHhQug&s" />
+</div>
+
 Script per effettuare rapido speedtest, da powershell eseguire:
 
 ```
