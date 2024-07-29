@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#COMPILARE IL CAMPO VARIABILI CON I DATI DEL FIREWALL SUL QUALE LANCIARE I COMANDI
+
+#Variabili
+HOST="INDIRIZZO_IP_FIREWALL"
+USER="USERNAME"
+PASS="PASSWORD"
+COMMAND="service sslvpn:restart -ds nosync"
+MAX_RETRIES=3
+RETRY_DELAY=10  # secondi
+
+sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no "$USER@$HOST" "/bin/sh -c \"$COMMAND\"" > output.log 2> error.log
