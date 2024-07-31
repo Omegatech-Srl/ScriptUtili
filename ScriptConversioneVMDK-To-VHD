@@ -1,0 +1,21 @@
+# Modify by Matteo Giustini
+# Date Modify: 23/06/2023
+#
+         		
+# ATTENZIONE: Scaricare ed installare il tool del link sotto - Microsoft Virtual Machine Converter 3.0 				
+# Download qui http://www.microsoft.com/en-us/download/details.aspx?id=42497
+
+# Sostituire le variabili sotto con quelle preferite
+
+# Percorso del file .VMDK
+$VMDK = "C:\Percorso\File\Sorgente"
+# Percorso destinazione file finale
+$DEST = "C:\Percorso\File\Destinazione"
+
+Import-Module 'C:\Program Files\Microsoft Virtual Machine Converter\MvmcCmdlet.psd1'
+
+Get-Command -module mvmccmdlet
+
+# Sostituire il formato .VHDX o .VHD - Default .Vhd
+ConvertTo-MvmcVirtualHardDisk -SourceLiteralPath "$VMDK" -DestinationLiteralPath "$DEST" `
+-VhdType DynamicHardDisk -VhdFormat Vhd
