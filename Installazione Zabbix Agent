@@ -14,6 +14,8 @@ $zabbixAgentUrl = "https://cdn.zabbix.com/zabbix/binaries/stable/7.0/7.0.2/zabbi
 $zabbixAgentMsi = "C:\zabbix_agent.msi"
 $zabbixServerIp = "145.14.161.84"
 $hostname = (hostname)
+$installPath = "C:\Program Files\Zabbix Agent"
+$zabbixConfigPath = "$installPath\zabbix_agentd.conf"
 
 # Download the Zabbix Agent MSI
 Write-Host "Downloading Zabbix Agent..."
@@ -23,18 +25,36 @@ Invoke-WebRequest -Uri $zabbixAgentUrl -OutFile $zabbixAgentMsi
 Write-Host "Installing Zabbix Agent..."
 Start-Process msiexec.exe -ArgumentList "/i `"$zabbixAgentMsi`" /quiet /norestart /L*v install.log" -Wait
 
+# Check if the Zabbix Agent installed successfully
+if (-not (Test-Path $installPath)) {
+    Write-Error "Zabbix Agent installation failed or installed to a different location."
+    exit 1
+}
+
 # Configure Zabbix Agent to point to the Zabbix Server
-Write-Host "Configuring Zabbix Agent..."
-$zabbixConfigPath = "C:\Program Files\Zabbix Agent\zabbix_agentd.conf"
-(Get-Content -Path $zabbixConfigPath) -replace "Server=127.0.0.1", "Server=$zabbixServerIp" | Set-Content -Path $zabbixConfigPath
-(Get-Content -Path $zabbixConfigPath) -replace "Hostname=Windows host", "Hostname=$hostname" | Set-Content -Path $zabbixConfigPath
+if (Test-Path $zabbixConfigPath) {
+    Write-Host "Configuring Zabbix Agent..."
+    (Get-Content -Path $zabbixConfigPath) -replace "Server=127.0.0.1", "Server=$zabbixServerIp" | Set-Content -Path $zabbixConfigPath
+    (Get-Content -Path $zabbixConfigPath) -replace "Hostname=Windows host", "Hostname=$hostname" | Set-Content -Path $zabbixConfigPath
+} else {
+    Write-Error "Zabbix Agent configuration file not found. Exiting script."
+    exit 1
+}
+
+# Determine the Zabbix Agent service name
+$serviceName = Get-Service | Where-Object { $_.DisplayName -like "*Zabbix Agent*" } | Select-Object -First 1 -ExpandProperty Name
+
+if (-not $serviceName) {
+    Write-Error "Zabbix Agent service not found. Exiting script."
+    exit 1
+}
 
 # Start the Zabbix Agent service
 Write-Host "Starting Zabbix Agent service..."
-Start-Service -Name "Zabbix Agent"
+Start-Service -Name $serviceName
 
 # Confirm that the service is running
-$serviceStatus = Get-Service -Name "Zabbix Agent"
+$serviceStatus = Get-Service -Name $serviceName
 if ($serviceStatus.Status -eq 'Running') {
     Write-Host "Zabbix Agent service is running."
 } else {
