@@ -9,71 +9,34 @@
 # Ultimo update 14/08/2024
 
 
-$version702ssl = "https://cdn.zabbix.com/zabbix/binaries/stable/7.0/7.0.2/zabbix_agent-7.0.2-windows-amd64-openssl.zip"
+# Variables
+$zabbixAgentUrl = "https://cdn.zabbix.com/zabbix/binaries/stable/7.0/7.0.2/zabbix_agent-7.0.2-windows-amd64-openssl.msi"
+$zabbixAgentMsi = "C:\zabbix_agent.msi"
+$zabbixServerIp = "145.14.161.84"
+$hostname = (hostname)
 
-# Prende server hostname
-$serverHostname = Invoke-Command -ScriptBlock {hostname}
+# Download the Zabbix Agent MSI
+Write-Host "Downloading Zabbix Agent..."
+Invoke-WebRequest -Uri $zabbixAgentUrl -OutFile $zabbixAgentMsi
 
-# Fornisce IP pubblico zabbix server
-$ServerIP = "145.14.161.84"
+# Install the Zabbix Agent
+Write-Host "Installing Zabbix Agent..."
+Start-Process msiexec.exe -ArgumentList "/i `"$zabbixAgentMsi`" /quiet /norestart /L*v install.log" -Wait
 
-# Crea Zabbix DIR
-$zabbixDir = "c:\zabbix"
-if (-not (Test-Path $zabbixDir)) {
-    mkdir $zabbixDir
+# Configure Zabbix Agent to point to the Zabbix Server
+Write-Host "Configuring Zabbix Agent..."
+$zabbixConfigPath = "C:\Program Files\Zabbix Agent\zabbix_agentd.conf"
+(Get-Content -Path $zabbixConfigPath) -replace "Server=127.0.0.1", "Server=$zabbixServerIp" | Set-Content -Path $zabbixConfigPath
+(Get-Content -Path $zabbixConfigPath) -replace "Hostname=Windows host", "Hostname=$hostname" | Set-Content -Path $zabbixConfigPath
+
+# Start the Zabbix Agent service
+Write-Host "Starting Zabbix Agent service..."
+Start-Service -Name "Zabbix Agent"
+
+# Confirm that the service is running
+$serviceStatus = Get-Service -Name "Zabbix Agent"
+if ($serviceStatus.Status -eq 'Running') {
+    Write-Host "Zabbix Agent service is running."
+} else {
+    Write-Error "Failed to start Zabbix Agent service."
 }
-
-# Scarica versione dalla variabile
-$zabbixZip = "$zabbixDir\zabbix.zip"
-Invoke-WebRequest -Uri $version702ssl -OutFile $zabbixZip
-
-# Verifica se il download è stato completato
-if (-not (Test-Path $zabbixZip)) {
-    Write-Error "Download failed. Exiting script."
-    exit 1
-}
-
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-
-function Unzip {
-    param([string]$zipfile, [string]$outpath)
-    try {
-        [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath)
-    } catch {
-        Write-Host "Failed to unzip `${zipfile}: $($_.Exception.Message)`"
-        exit 1
-    }
-}
-
-# Unzip
-Unzip $zabbixZip $zabbixDir
-
-# Verifica se i file sono stati estratti correttamente
-$agentExePath = "$zabbixDir\bin\zabbix_agentd.exe"
-$agentConfPath = "$zabbixDir\conf\zabbix_agentd.conf"
-
-if (-not (Test-Path $agentExePath) -or -not (Test-Path $agentConfPath)) {
-    Write-Error "Unzipped files not found. Exiting script."
-    exit 1
-}
-
-# Sposta files
-Move-Item $agentExePath -Destination $zabbixDir
-
-# Sposta conf
-Move-Item $agentConfPath -Destination $zabbixDir
-
-# Imposta IP pubblico server zabbix in conf
-(Get-Content -Path "$zabbixDir\zabbix_agentd.conf") | ForEach-Object {$_ -Replace '127.0.0.1', "$ServerIP"} | Set-Content -Path "$zabbixDir\zabbix_agentd.conf"
-
-# Imposta hostname in conf
-(Get-Content -Path "$zabbixDir\zabbix_agentd.conf") | ForEach-Object {$_ -Replace 'Windows host', "$serverHostname"} | Set-Content -Path "$zabbixDir\zabbix_agentd.conf"
-
-# Tenta installazione agent
-& "$zabbixDir\zabbix_agentd.exe" --config "$zabbixDir\zabbix_agentd.conf" --install
-
-# Tenta start agent
-& "$zabbixDir\zabbix_agentd.exe" --start
-
-# Crea regola su fw windows
-New-NetFirewallRule -DisplayName "Allow Zabbix communication" -Direction Inbound -Program "$zabbixDir\zabbix_agentd.exe" -RemoteAddress LocalSubnet -Action Allow
