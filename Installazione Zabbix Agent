@@ -10,7 +10,7 @@
 
 
 
-$version702ssl = " https://cdn.zabbix.com/zabbix/binaries/stable/7.0/7.0.2/zabbix_agent-7.0.2-windows-amd64-openssl.msi"
+$version702ssl = " https://cdn.zabbix.com/zabbix/binaries/stable/7.0/7.0.2/zabbix_agent-7.0.2-windows-amd64-openssl.zip"
 
 
 
