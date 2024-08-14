@@ -9,39 +9,40 @@
 # Ultimo update 14/08/2024
 
 
-# Define the necessary variables
+# Definisci le variabili
+# Cambia la variabile qua sotto quando esce nuova versione agent
 $zabbixMsiUrl = "https://cdn.zabbix.com/zabbix/binaries/stable/7.0/7.0.2/zabbix_agent-7.0.2-windows-amd64-openssl.msi"
 $zabbixServerIP = "145.14.161.84"
 $installFolder = "C:\Program Files\Zabbix Agent"
 
-# Download the Zabbix Agent MSI
-Write-Host "Downloading Zabbix Agent..."
+# Scarica msi dell'agent Zabbix
+Write-Host "Scaricamento dell'agente Zabbix in corso..."
 $msiPath = "$env:TEMP\zabbix_agent.msi"
 Invoke-WebRequest -Uri $zabbixMsiUrl -OutFile $msiPath
 
-# Install the Zabbix Agent using msiexec
-Write-Host "Installing Zabbix Agent..."
+# Installa l'agent Zabbix utilizzando msiexec
+Write-Host "Installazione dell'agente Zabbix in corso..."
 Start-Process msiexec.exe -ArgumentList "/i `"$msiPath`" /qn INSTALLFOLDER=`"$installFolder`" SERVER=`"$zabbixServerIP`"" -NoNewWindow -Wait
 
-# Check if installation was successful
+# Verifica se l'installazione è ok
 if (-Not (Test-Path -Path "$installFolder\zabbix_agentd.conf")) {
-    Write-Error "Zabbix Agent installation failed or configuration file not found."
+    Write-Error "Installazione dell'agente Zabbix fallita o file di configurazione non trovato."
     exit 1
 }
 
-# Start the Zabbix Agent service
-Write-Host "Starting Zabbix Agent service..."
+# Avvia il servizio
+Write-Host "Avvio del servizio dell'agente Zabbix in corso..."
 Start-Service -Name "Zabbix Agent"
 
-# Check if the service started successfully
+# Verifica se il servizio è ok
 $serviceStatus = Get-Service -Name "Zabbix Agent"
 if ($serviceStatus.Status -eq "Running") {
-    Write-Host "Zabbix Agent service started successfully."
+    Write-Host "Servizio dell'agente Zabbix avviato con successo."
 } else {
-    Write-Error "Failed to start Zabbix Agent service."
+    Write-Error "Avvio del servizio dell'agente Zabbix fallito."
 }
 
-# Optional: Clean up downloaded MSI
+# Facoltativo: pulizia del file MSI scaricato
 Remove-Item -Path $msiPath -Force
 
-Write-Host "Zabbix Agent installation and configuration completed."
+Write-Host "Installazione e configurazione dell'agente Zabbix completate."
