@@ -40,7 +40,7 @@ function Unzip {
     try {
         [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath)
     } catch {
-        Write-Error "Failed to unzip $zipfile: $_"
+        Write-Error "Failed to unzip `${zipfile}: $($_.Exception.Message)`"
         exit 1
     }
 }
