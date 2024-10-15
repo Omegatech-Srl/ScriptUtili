@@ -1,0 +1,13 @@
+@echo off
+echo Pulizia cache RDP in corso
+timeout -t 4
+reg delete "HKEY_CURRENT_USER\Software\Microsoft\Terminal Server Client\Default" /va /f
+timeout -t 2
+reg delete "HKEY_CURRENT_USER\Software\Microsoft\Terminal Server Client\Servers" /f
+timeout -t 2
+reg add "HKEY_CURRENT_USER\Software\Microsoft\Terminal Server Client\Servers"
+timeout -t 2
+attrib -s -h %userprofile%\documents\Default.rdp
+del %userprofile%\documents\Default.rdp
+del /f /s /q /a %AppData%\Microsoft\Windows\Recent\AutomaticDestinations
+echo Finito!
