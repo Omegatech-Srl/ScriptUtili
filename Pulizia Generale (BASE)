@@ -1,0 +1,38 @@
+rem Eliminazione file TEMP
+del /s /f /q c:\windows\temp\*.*
+del /s /f /q c:\windows\Prefetch
+del /s /f /q %temp%\*.*
+
+erase "%TEMP%\*.*" /f /s /q
+for /D %%i in ("%TEMP%\*") do RD /S /Q "%%i"
+
+erase "%TMP%\*.*" /f /s /q
+for /D %%i in ("%TMP%\*") do RD /S /Q "%%i"
+
+erase "%ALLUSERSPROFILE%\TEMP\*.*" /f /s /q
+for /D %%i in ("%ALLUSERSPROFILE%\TEMP\*") do RD /S /Q "%%i"
+
+erase "%SystemRoot%\TEMP\*.*" /f /s /q
+for /D %%i in ("%SystemRoot%\TEMP\*") do RD /S /Q "%%i"
+
+rem Pulizia cache chrome
+del /q /f "%LocalAppData%\Google\Chrome\User Data\Default\Cache\*.*"
+del /q /f "%LocalAppData%\Google\Chrome\User Data\Default\Cache\*.*"
+
+rem Pulizia Cestino
+rd /s /q C:\$Recycle.Bin
+echo Cestino svuotato
+
+rem Pulizia cache Firefox
+
+cd /d "%APPDATA%\Mozilla\Firefox\Profiles"
+for /d %%a in (.default) do (
+cd "%%a\cache"
+rd /s /q *
+
+rem pulizia temp da AppData
+
+cd %appdata%
+cd ..
+cd Local
+del *.tmp /S /Q
