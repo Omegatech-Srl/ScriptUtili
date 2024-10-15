@@ -1,0 +1,105 @@
+@echo off
+setlocal enabledelayedexpansion
+
+REM Define log file
+set logFile="%TEMP%\cleanup.log"
+
+REM Log the start of the script
+echo Cleanup started at %date% %time% > %logFile%
+echo Cleanup started at %date% %time%
+
+REM Stop Windows Update service
+echo Stopping Windows Update service
+echo Stopping Windows Update service >> %logFile%
+net stop wuauserv >> %logFile% 2>&1
+
+REM Clean SoftwareDistribution folder
+echo Cleaning SoftwareDistribution folder
+echo Cleaning SoftwareDistribution folder >> %logFile%
+del /s /q "C:\Windows\SoftwareDistribution\*" >> %logFile% 2>&1
+
+REM Clean Windows Temp folder
+echo Cleaning Windows Temp folder
+echo Cleaning Windows Temp folder >> %logFile%
+forfiles /p "C:\Windows\Temp" /s /m *.* /d -7 /c "cmd /c del /q @path" >> %logFile% 2>&1
+
+REM Clean user's Temp folders
+echo Cleaning user's Temp folders
+echo Cleaning user's Temp folders >> %logFile%
+forfiles /p "C:\Users\*" /s /m *.* /d -7 /c "cmd /c del /q @path" >> %logFile% 2>&1
+
+REM Clean IIS Logs if exists
+if exist "C:\inetpub\logs\LogFiles\" (
+    echo Cleaning IIS Logs
+    echo Cleaning IIS Logs >> %logFile%
+    forfiles /p "C:\inetpub\logs\LogFiles" /s /m *.* /d -7 /c "cmd /c del /q @path" >> %logFile% 2>&1
+) else (
+    echo "C:\inetpub\logs\LogFiles\ does not exist, nothing to clean."
+    echo "C:\inetpub\logs\LogFiles\ does not exist, nothing to clean." >> %logFile%
+)
+
+REM Clean various Windows folders
+echo Cleaning various Windows folders
+echo Cleaning various Windows folders >> %logFile%
+set foldersToClean="C:\Config.Msi" "C:\Intel" "C:\PerfLogs" "%windir%\memory.dmp" "%windir%\Temp\*" "%windir%\minidump\*" "%windir%\Prefetch\*"
+
+for %%f in (%foldersToClean%) do (
+    if exist %%f (
+        echo Cleaning %%f
+        echo Cleaning %%f >> %logFile%
+        del /s /q %%f >> %logFile% 2>&1
+    ) else (
+        echo %%f does not exist, nothing to clean.
+        echo %%f does not exist, nothing to clean. >> %logFile%
+    )
+)
+
+REM Clean user's Internet files and IE cache
+echo Cleaning user's Internet files and IE cache
+echo Cleaning user's Internet files and IE cache >> %logFile%
+set userPathsToClean="C:\Users\*\AppData\Local\Microsoft\Windows\Temporary Internet Files\*" "C:\Users\*\AppData\Local\Microsoft\Windows\IECompatCache\*" "C:\Users\*\AppData\Local\Microsoft\Windows\IECompatUaCache\*" "C:\Users\*\AppData\Local\Microsoft\Windows\IEDownloadHistory\*" "C:\Users\*\AppData\Local\Microsoft\Windows\INetCache\*" "C:\Users\*\AppData\Local\Microsoft\Windows\INetCookies\*" "C:\Users\*\AppData\Local\Microsoft\Terminal Server Client\Cache\*"
+
+for %%u in (%userPathsToClean%) do (
+    if exist %%u (
+        echo Cleaning %%u
+        echo Cleaning %%u >> %logFile%
+        del /s /q %%u >> %logFile% 2>&1
+    ) else (
+        echo %%u does not exist, nothing to clean.
+        echo %%u does not exist, nothing to clean. >> %logFile%
+    )
+)
+
+REM Remove hidden recycle bin
+if exist 'C:\$Recycle.Bin' (
+    echo Cleaning hidden recycle bin
+    echo Cleaning hidden recycle bin >> %logFile%
+    del /s /q 'C:\$Recycle.Bin\*' >> %logFile% 2>&1
+) else (
+    echo 'C:\$Recycle.Bin' does not exist, nothing to clean.
+    echo 'C:\$Recycle.Bin' does not exist, nothing to clean. >> %logFile%
+)
+
+REM Clean Recycle Bin
+echo Cleaning Recycle Bin
+echo Cleaning Recycle Bin >> %logFile%
+for /d %%i in (%SystemDrive%\$Recycle.Bin\*) do (
+    echo Cleaning %%i
+    echo Cleaning %%i >> %logFile%
+    rd /s /q "%%i" >> %logFile% 2>&1
+)
+
+REM Run Windows Disk Cleanup
+echo Running Windows Disk Cleanup
+echo Running Windows Disk Cleanup >> %logFile%
+cleanmgr /sagerun:1 >> %logFile% 2>&1
+
+REM Restart Windows Update service
+echo Restarting Windows Update service
+echo Restarting Windows Update service >> %logFile%
+net start wuauserv >> %logFile% 2>&1
+
+REM Log the completion of the script
+echo Cleanup completed at %date% %time%
+echo Cleanup completed at %date% %time% >> %logFile%
+echo Cleanup script completed successfully.
