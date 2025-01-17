@@ -1,0 +1,9 @@
+# Stato smbv2
+Get-SmbServerConfiguration | Select EnableSMB2Protocol
+
+# Sessioni aperte smb
+Get-SmbSession | Select-Object -Property ClientComputerName,ClientUserName,Dialect,NumOpens
+
+
+# Installa smbv1
+Get-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
