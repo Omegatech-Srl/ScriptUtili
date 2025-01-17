@@ -1,9 +1,40 @@
-# Stato smbv2
-Get-SmbServerConfiguration | Select EnableSMB2Protocol
+# Controlla se SMBv1 è abilitato
+function Check-SMBv1 {
+    Write-Host "Controllo dello stato di SMBv1..." -ForegroundColor Cyan
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"
+    $valueName = "SMB1"
 
-# Sessioni aperte smb
-Get-SmbSession | Select-Object -Property ClientComputerName,ClientUserName,Dialect,NumOpens
+    if (Test-Path $regPath) {
+        $smb1Status = Get-ItemProperty -Path $regPath -Name $valueName -ErrorAction SilentlyContinue
+        if ($null -ne $smb1Status -and $smb1Status.$valueName -eq 1) {
+            Write-Host "SMBv1 è abilitato." -ForegroundColor Green
+            return $true
+        }
+    }
+    Write-Host "SMBv1 non è abilitato." -ForegroundColor Yellow
+    return $false
+}
 
+# Abilita SMBv1
+function Enable-SMBv1 {
+    Write-Host "Abilitazione di SMBv1..." -ForegroundColor Cyan
+    try {
+        # Abilita il client SMBv1
+        Enable-WindowsOptionalFeature -Online -FeatureName "SMB1Protocol-Client" -NoRestart -ErrorAction Stop
+        # Abilita il server SMBv1
+        Enable-WindowsOptionalFeature -Online -FeatureName "SMB1Protocol-Server" -NoRestart -ErrorAction Stop
+        # Abilita il supporto automatico per SMBv1
+        Enable-WindowsOptionalFeature -Online -FeatureName "SMB1Protocol-Deprecation" -NoRestart -ErrorAction Stop
 
-# Installa smbv1
-Get-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
+        Write-Host "SMBv1 è stato abilitato con successo. È richiesto un riavvio per applicare le modifiche." -ForegroundColor Green
+    } catch {
+        Write-Host "Errore durante l'abilitazione di SMBv1: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+# Esegui lo script
+if (-Not (Check-SMBv1)) {
+    Enable-SMBv1
+} else {
+    Write-Host "Non è necessaria alcuna azione, SMBv1 è già abilitato." -ForegroundColor Green
+}
